@@ -16,6 +16,30 @@ import {
 export const CouponsTab: React.FC = () => {
   const { coupons, activeVendor, addCoupon, toggleCouponActive, updateVendorDetails } = useApp();
 
+  const [isAddCouponOpen, setIsAddCouponOpen] = useState(false);
+  const [code, setCode] = useState('');
+  const [discountType, setDiscountType] = useState<CouponType>('percentage');
+  const [value, setValue] = useState(20);
+  const [minPurchase, setMinPurchase] = useState(499);
+  const [maxDiscount, setMaxDiscount] = useState(150);
+
+  // Happy hour state - initialize safely with defaults
+  const [happyHourEnabled, setHappyHourEnabled] = useState(false);
+  const [happyHourDiscount, setHappyHourDiscount] = useState(0);
+  const [happyHourStart, setHappyHourStart] = useState('00:00');
+  const [happyHourEnd, setHappyHourEnd] = useState('00:00');
+  const [savedHappyHourNotice, setSavedHappyHourNotice] = useState(false);
+
+  // Sync happy hour state when activeVendor becomes available
+  React.useEffect(() => {
+    if (activeVendor) {
+      setHappyHourEnabled(activeVendor.happyHourEnabled);
+      setHappyHourDiscount(activeVendor.happyHourDiscount);
+      setHappyHourStart(activeVendor.happyHourStart);
+      setHappyHourEnd(activeVendor.happyHourEnd);
+    }
+  }, [activeVendor]);
+
   if (!activeVendor) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -25,20 +49,6 @@ export const CouponsTab: React.FC = () => {
       </div>
     );
   }
-
-  const [isAddCouponOpen, setIsAddCouponOpen] = useState(false);
-  const [code, setCode] = useState('');
-  const [discountType, setDiscountType] = useState<CouponType>('percentage');
-  const [value, setValue] = useState(20);
-  const [minPurchase, setMinPurchase] = useState(499);
-  const [maxDiscount, setMaxDiscount] = useState(150);
-
-  // Happy hour state
-  const [happyHourEnabled, setHappyHourEnabled] = useState(() => activeVendor?.happyHourEnabled || false);
-  const [happyHourDiscount, setHappyHourDiscount] = useState(() => activeVendor?.happyHourDiscount || 0);
-  const [happyHourStart, setHappyHourStart] = useState(() => activeVendor?.happyHourStart || '00:00');
-  const [happyHourEnd, setHappyHourEnd] = useState(() => activeVendor?.happyHourEnd || '00:00');
-  const [savedHappyHourNotice, setSavedHappyHourNotice] = useState(false);
 
   const handleSaveHappyHour = (e: React.FormEvent) => {
     e.preventDefault();
