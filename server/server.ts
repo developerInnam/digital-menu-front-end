@@ -1,6 +1,4 @@
 import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import apiRoutes from './routes';
@@ -8,9 +6,6 @@ import { initDatabase } from './db';
 
 dotenv.config();
 dotenv.config({ path: '.env.local' });
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -50,44 +45,23 @@ initDatabase().catch(err => {
   console.warn('Database initialization warning:', err);
 });
 
-// Mount API routes FIRST
+// Mount API routes
 app.use('/api', apiRoutes);
 
-// Vite middleware for development vs static build in production
-if (process.env.NODE_ENV !== 'production') {
-  (async () => {
-    try {
-      const { createServer: createViteServer } = await import('vite');
-      const vite = await createViteServer({
-        server: {
-          middlewareMode: true,
-          proxy: {
-            '/api': {
-              target: 'http://localhost:3000',
-              changeOrigin: true,
-            },
-          },
-        },
-        appType: 'spa',
-      });
-      app.use(vite.middlewares);
-    } catch (err) {
-      console.warn('Vite not available, running without dev middleware:', err);
-    }
-  })();
-} else {
-  const distPath = path.join(process.cwd(), 'dist');
-  app.use(express.static(distPath));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'));
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
   });
-}
+});
 
 // For Vercel deployment - export the app
 export default app;
 
 // For local development
-if (require.main === module || import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 [Server] Node.js Express server running on http://0.0.0.0:${PORT}`);
