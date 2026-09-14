@@ -1,0 +1,6 @@
+{
+  "name": "DineSmart - Digital QR Menu & Restaurant Management",
+  "description": "Smart digital restaurant SaaS platform featuring interactive QR menus, live order tracking, kitchen display system, vendor analytics, and table-based ordering.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
