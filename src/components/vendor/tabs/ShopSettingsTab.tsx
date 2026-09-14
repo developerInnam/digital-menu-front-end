@@ -17,6 +17,16 @@ import {
 export const ShopSettingsTab: React.FC = () => {
   const { activeVendor, updateVendorDetails } = useApp();
 
+  if (!activeVendor) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <p className="text-slate-600">Loading vendor data...</p>
+        </div>
+      </div>
+    );
+  }
+
   const [name, setName] = useState(activeVendor.name);
   const [tagline, setTagline] = useState(activeVendor.tagline);
   const [logo, setLogo] = useState(activeVendor.logo);
@@ -30,7 +40,7 @@ export const ShopSettingsTab: React.FC = () => {
   const [instagram, setInstagram] = useState(activeVendor.socialLinks?.instagram || '');
   const [facebook, setFacebook] = useState(activeVendor.socialLinks?.facebook || '');
   const [gstNumber, setGstNumber] = useState(activeVendor.gstNumber);
-  const [taxPercent, setTaxPercent] = useState(activeVendor.taxPercent);
+  const [taxPercent, setTaxPercent] = useState(activeVendor.taxPercent || 0);
   const [currency, setCurrency] = useState(activeVendor.currency);
 
   const [savedNotice, setSavedNotice] = useState(false);
