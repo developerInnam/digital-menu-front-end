@@ -26,7 +26,8 @@ async function startServer() {
     'http://localhost:3000',
     'https://digital-menu-eight.vercel.app',
     'https://digital-menu.vercel.app',
-    process.env.FRONTEND_URL || ''
+    'https://digital-menu-front-end.vercel.app',
+    process.env.CLIENT_URL || process.env.FRONTEND_URL || ''
   ].filter(Boolean);
 
   app.use(cors({
