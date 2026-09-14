@@ -552,7 +552,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (subtotal < found.minPurchase) {
       return {
         success: false,
-        message: `Minimum purchase of ${activeVendor.currency}${found.minPurchase} required for this coupon.`
+        message: `Minimum purchase of ${activeVendor?.currency || '$'}${found.minPurchase} required for this coupon.`
       };
     }
 
@@ -566,7 +566,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Cart totals calculation
   const isHappyHourActive = () => {
-    if (!activeVendor.happyHourEnabled) return false;
+    if (!activeVendor || !activeVendor.happyHourEnabled) return false;
     const now = new Date();
     const currentHours = now.getHours() + now.getMinutes() / 60;
     const [startH, startM] = activeVendor.happyHourStart.split(':').map(Number);
@@ -581,8 +581,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     let discount = 0;
     let happyHourDiscount = 0;
 
-    if (isHappyHourActive()) {
-      happyHourDiscount = (subtotal * activeVendor.happyHourDiscount) / 100;
+    if (activeVendor && isHappyHourActive()) {
+      happyHourDiscount = (subtotal * (activeVendor.happyHourDiscount || 0)) / 100;
     }
 
     if (appliedCoupon) {
