@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
-import { dbService, getDbStatus, seedDatabaseIfEmpty } from './db';
-import { hashPassword, comparePassword, generateToken, verifyToken, DEFAULT_VENDOR_PERMISSIONS, DEFAULT_ADMIN_PERMISSIONS } from './utils/auth';
-import { authenticate, authorize, AuthRequest } from './middleware/auth';
+import { dbService, getDbStatus, seedDatabaseIfEmpty } from './db.js';
+import { hashPassword, comparePassword, generateToken, verifyToken, DEFAULT_VENDOR_PERMISSIONS, DEFAULT_ADMIN_PERMISSIONS } from './utils/auth.js';
+import { authenticate, authorize, AuthRequest } from './middleware/auth.js';
 
 const router = Router();
 

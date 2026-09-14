@@ -1,8 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import apiRoutes from './routes';
-import { initDatabase } from './db';
+import apiRoutes from './routes.js';
+import { initDatabase } from './db.js';
 
 dotenv.config();
 dotenv.config({ path: '.env.local' });
@@ -20,6 +20,7 @@ const allowedOrigins = [
   'https://digital-menu-eight.vercel.app',
   'https://digital-menu.vercel.app',
   'https://digital-menu-front-end.vercel.app',
+  'https://digital-menu-front-end-ashen.vercel.app',
   process.env.CLIENT_URL || process.env.FRONTEND_URL || ''
 ].filter(Boolean);
 
@@ -54,6 +55,20 @@ app.get('/health', (req, res) => {
     status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
+  });
+});
+
+// Catch-all for undefined routes - return JSON error
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found', path: req.path });
+});
+
+// Error handler - ensure JSON responses
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error('Server error:', err);
+  res.status(500).json({ 
+    error: 'Internal server error', 
+    message: err.message || 'An unexpected error occurred' 
   });
 });
 

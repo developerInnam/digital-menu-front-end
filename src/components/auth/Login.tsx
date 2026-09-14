@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, Store, ShieldCheck, ArrowRight } from 'lucide-react';
+import { API_BASE } from '../../services/api';
 
 interface LoginProps {
   onLoginSuccess?: (user: any) => void;
@@ -20,7 +21,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

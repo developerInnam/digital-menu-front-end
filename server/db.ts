@@ -8,8 +8,8 @@ import {
   CouponModel,
   CustomerModel,
   SubscriptionPlanModel
-} from './models/schemas';
-import { hashPassword } from './utils/auth';
+} from './models/schemas.js';
+import { hashPassword } from './utils/auth.js';
 import {
   initialVendors,
   initialCategories,
@@ -22,7 +22,7 @@ import {
   adminUser,
   type SubscriptionPlan,
   type Customer
-} from './src/data/initialData';
+} from './src/data/initialData.js';
 
 export interface DbStatusInfo {
   engine: 'mongodb' | 'in_memory_fallback';
