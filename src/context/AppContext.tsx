@@ -226,6 +226,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const activeVendor = vendors.find(v => v.id === activeVendorId) || vendors[0] || null;
 
+  // Ensure activeVendor has all required properties with safe defaults
+  const safeActiveVendor = activeVendor ? {
+    ...activeVendor,
+    happyHourEnabled: activeVendor.happyHourEnabled ?? false,
+    happyHourDiscount: activeVendor.happyHourDiscount ?? 0,
+    happyHourStart: activeVendor.happyHourStart ?? '00:00',
+    happyHourEnd: activeVendor.happyHourEnd ?? '00:00',
+    currency: activeVendor.currency ?? '$'
+  } : null;
+
   // Refresh DB Status from Express
   const refreshDbStatus = useCallback(async () => {
     try {
@@ -552,7 +562,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (subtotal < found.minPurchase) {
       return {
         success: false,
-        message: `Minimum purchase of ${activeVendor?.currency || '$'}${found.minPurchase} required for this coupon.`
+        message: `Minimum purchase of ${safeActiveVendor?.currency || '$'}${found.minPurchase} required for this coupon.`
       };
     }
 
@@ -566,11 +576,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Cart totals calculation
   const isHappyHourActive = () => {
-    if (!activeVendor || !activeVendor.happyHourEnabled) return false;
+    if (!safeActiveVendor || !safeActiveVendor.happyHourEnabled) return false;
     const now = new Date();
     const currentHours = now.getHours() + now.getMinutes() / 60;
-    const [startH, startM] = activeVendor.happyHourStart.split(':').map(Number);
-    const [endH, endM] = activeVendor.happyHourEnd.split(':').map(Number);
+    const [startH, startM] = (safeActiveVendor.happyHourStart || '00:00').split(':').map(Number);
+    const [endH, endM] = (safeActiveVendor.happyHourEnd || '00:00').split(':').map(Number);
     const startVal = startH + (startM || 0) / 60;
     const endVal = endH + (endM || 0) / 60;
     return currentHours >= startVal && currentHours <= endVal;
@@ -581,8 +591,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     let discount = 0;
     let happyHourDiscount = 0;
 
-    if (activeVendor && isHappyHourActive()) {
-      happyHourDiscount = (subtotal * (activeVendor.happyHourDiscount || 0)) / 100;
+    if (safeActiveVendor && isHappyHourActive()) {
+      happyHourDiscount = (subtotal * (safeActiveVendor.happyHourDiscount || 0)) / 100;
     }
 
     if (appliedCoupon) {
@@ -810,14 +820,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         refreshDbStatus,
         reseedDatabase,
         vendors,
-        activeVendor: activeVendor || (vendors[0] || null),
+        activeVendor: safeActiveVendor || (vendors[0] || null),
         setActiveVendorId,
         setActiveVendor,
         registerVendor,
         updateVendorDetails,
-        categories: activeVendor ? categories.filter(c => c.vendorId === activeVendor.id) : [],
-        products: activeVendor ? products.filter(p => p.vendorId === activeVendor.id) : [],
-        combos: activeVendor ? combos.filter(c => c.vendorId === activeVendor.id) : [],
+        categories: safeActiveVendor ? categories.filter(c => c.vendorId === safeActiveVendor.id) : [],
+        products: safeActiveVendor ? products.filter(p => p.vendorId === safeActiveVendor.id) : [],
+        combos: safeActiveVendor ? combos.filter(c => c.vendorId === safeActiveVendor.id) : [],
         addCategory,
         deleteCategory,
         reorderCategories,
@@ -837,19 +847,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isRedeemingPoints,
         setIsRedeemingPoints,
         cartTotals,
-        orders: activeVendor ? orders.filter(o => o.vendorId === activeVendor.id) : [],
+        orders: safeActiveVendor ? orders.filter(o => o.vendorId === safeActiveVendor.id) : [],
         activeTrackingOrderId,
         setActiveTrackingOrderId,
         placeOrder,
         updateOrderStatus,
         addOrderReview,
-        tables: activeVendor ? tables.filter(t => t.vendorId === activeVendor.id) : [],
+        tables: safeActiveVendor ? tables.filter(t => t.vendorId === safeActiveVendor.id) : [],
         addTable,
         deleteTable,
-        coupons: activeVendor ? coupons.filter(c => c.vendorId === activeVendor.id) : [],
+        coupons: safeActiveVendor ? coupons.filter(c => c.vendorId === safeActiveVendor.id) : [],
         addCoupon,
         toggleCouponActive,
-        customers: activeVendor ? customers.filter(c => c.vendorId === activeVendor.id) : [],
+        customers: safeActiveVendor ? customers.filter(c => c.vendorId === safeActiveVendor.id) : [],
         subscriptionPlans,
         setSubscriptionPlans,
         soundAlertEnabled,
