@@ -30,7 +30,7 @@ export interface DbStatusData {
   message: string;
 }
 
-const API_BASE = (window as any).VITE_API_BASE_URL || 'https://digital-menu-backend-theta.vercel.app/api';
+const API_BASE = 'https://digital-menu-backend-theta.vercel.app/api';
 
 function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem('authToken');
