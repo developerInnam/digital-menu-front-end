@@ -34,10 +34,10 @@ export const CouponsTab: React.FC = () => {
   const [maxDiscount, setMaxDiscount] = useState(150);
 
   // Happy hour state
-  const [happyHourEnabled, setHappyHourEnabled] = useState(activeVendor.happyHourEnabled);
-  const [happyHourDiscount, setHappyHourDiscount] = useState(activeVendor.happyHourDiscount);
-  const [happyHourStart, setHappyHourStart] = useState(activeVendor.happyHourStart);
-  const [happyHourEnd, setHappyHourEnd] = useState(activeVendor.happyHourEnd);
+  const [happyHourEnabled, setHappyHourEnabled] = useState(() => activeVendor?.happyHourEnabled || false);
+  const [happyHourDiscount, setHappyHourDiscount] = useState(() => activeVendor?.happyHourDiscount || 0);
+  const [happyHourStart, setHappyHourStart] = useState(() => activeVendor?.happyHourStart || '00:00');
+  const [happyHourEnd, setHappyHourEnd] = useState(() => activeVendor?.happyHourEnd || '00:00');
   const [savedHappyHourNotice, setSavedHappyHourNotice] = useState(false);
 
   const handleSaveHappyHour = (e: React.FormEvent) => {
