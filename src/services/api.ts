@@ -33,7 +33,7 @@ export interface DbStatusData {
 const API_BASE = (window as any).VITE_API_BASE_URL || 
   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? '/api'
-    : 'https://digital-menu-backend-eight.vercel.app/api';
+    : 'https://digital-menu-backend-theta.vercel.app/api';
 
 function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem('authToken');
