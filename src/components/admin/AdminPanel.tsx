@@ -219,7 +219,7 @@ export const AdminPanel: React.FC = () => {
               className="flex items-center gap-1.5 px-3.5 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>Onboard New </span>
+              <span>Onboard New Restaurant</span>
             </button>
             <button
               onClick={() => navigate('/vendor/register')}
