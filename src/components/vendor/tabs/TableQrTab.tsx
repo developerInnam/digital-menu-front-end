@@ -16,6 +16,16 @@ import {
 export const TableQrTab: React.FC = () => {
   const { tables, activeVendor, addTable, deleteTable } = useApp();
 
+  if (!activeVendor) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <p className="text-slate-600">Loading vendor data...</p>
+        </div>
+      </div>
+    );
+  }
+
   const [selectedTableNumber, setSelectedTableNumber] = useState<string>(
     tables[0]?.tableNumber || '1'
   );

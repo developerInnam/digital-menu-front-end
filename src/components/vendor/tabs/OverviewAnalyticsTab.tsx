@@ -27,6 +27,16 @@ export const OverviewAnalyticsTab: React.FC<OverviewAnalyticsTabProps> = ({
 }) => {
   const { activeVendor, orders, products, categories, customers } = useApp();
 
+  if (!activeVendor) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <p className="text-slate-600">Loading vendor data...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Metrics calculations
   const todayOrders = orders; // Demo set represents active working session
   const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);

@@ -20,6 +20,16 @@ import {
 export const OrdersTab: React.FC = () => {
   const { orders, updateOrderStatus, activeVendor } = useApp();
 
+  if (!activeVendor) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <p className="text-slate-600">Loading vendor data...</p>
+        </div>
+      </div>
+    );
+  }
+
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [printingOrder, setPrintingOrder] = useState<Order | null>(null);

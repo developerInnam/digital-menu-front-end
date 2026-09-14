@@ -17,6 +17,16 @@ import {
 export const CustomersTab: React.FC = () => {
   const { customers, activeVendor } = useApp();
 
+  if (!activeVendor) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <p className="text-slate-600">Loading vendor data...</p>
+        </div>
+      </div>
+    );
+  }
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCustomerForWhatsApp, setSelectedCustomerForWhatsApp] = useState<Customer | null>(null);
   const [whatsappMessage, setWhatsappMessage] = useState(

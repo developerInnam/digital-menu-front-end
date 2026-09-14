@@ -36,6 +36,16 @@ export const MenuManagementTab: React.FC<MenuManagementTabProps> = ({
     updateProductStock
   } = useApp();
 
+  if (!activeVendor) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <p className="text-slate-600">Loading vendor data...</p>
+        </div>
+      </div>
+    );
+  }
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCat, setSelectedCat] = useState('all');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);

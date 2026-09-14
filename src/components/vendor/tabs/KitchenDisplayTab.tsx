@@ -14,6 +14,16 @@ import {
 export const KitchenDisplayTab: React.FC = () => {
   const { orders, updateOrderStatus, activeVendor } = useApp();
 
+  if (!activeVendor) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <p className="text-slate-600">Loading vendor data...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Elapsed timer tick state for live time computation
   const [, setTick] = useState(0);
 

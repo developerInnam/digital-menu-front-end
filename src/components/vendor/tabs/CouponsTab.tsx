@@ -16,6 +16,16 @@ import {
 export const CouponsTab: React.FC = () => {
   const { coupons, activeVendor, addCoupon, toggleCouponActive, updateVendorDetails } = useApp();
 
+  if (!activeVendor) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <p className="text-slate-600">Loading vendor data...</p>
+        </div>
+      </div>
+    );
+  }
+
   const [isAddCouponOpen, setIsAddCouponOpen] = useState(false);
   const [code, setCode] = useState('');
   const [discountType, setDiscountType] = useState<CouponType>('percentage');
