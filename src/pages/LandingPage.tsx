@@ -20,12 +20,28 @@ export const LandingPage: React.FC = () => {
               <h1 className="text-xl font-bold text-slate-900">Digital Menu</h1>
             </div>
             <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate('/admin')}
-                className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-              >
-                Admin
-              </button>
+              {isAuthenticated && user?.role === 'admin' ? (
+                <button
+                  onClick={() => navigate('/admin')}
+                  className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  Admin
+                </button>
+              ) : isAuthenticated && user?.role === 'vendor' ? (
+                <button
+                  onClick={() => navigate(`/vendor/${user.slug}/dashboard`)}
+                  className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  Dashboard
+                </button>
+              ) : (
+                <button
+                  onClick={() => navigate('/login')}
+                  className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  Login
+                </button>
+              )}
               <button
                 onClick={() => navigate('/vendor/register')}
                 className="bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors"
@@ -100,10 +116,18 @@ export const LandingPage: React.FC = () => {
               Manage vendors, monitor platform performance, and oversee all operations.
             </p>
             <button
-              onClick={() => navigate('/admin')}
+              onClick={() => {
+                if (isAuthenticated && user?.role === 'admin') {
+                  navigate('/admin');
+                } else if (isAuthenticated && user?.role === 'vendor') {
+                  navigate(`/vendor/${user.slug}/dashboard`);
+                } else {
+                  navigate('/login');
+                }
+              }}
               className="w-full bg-slate-900 text-white py-3 rounded-lg font-medium hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
             >
-              Go to Admin Panel
+              {isAuthenticated && user?.role === 'admin' ? 'Go to Admin Panel' : isAuthenticated && user?.role === 'vendor' ? 'Go to Dashboard' : 'Login to Access'}
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
