@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { dbService, getDbStatus, seedDatabaseIfEmpty } from './db.js';
 import { hashPassword, comparePassword, generateToken, verifyToken, DEFAULT_VENDOR_PERMISSIONS, DEFAULT_ADMIN_PERMISSIONS } from './utils/auth.js';
 import { authenticate, authorize, AuthRequest } from './middleware/auth.js';
+import { broadcastToVendor } from './server.js';
 
 const router = Router();
 
@@ -559,6 +560,13 @@ router.post('/orders', async (req: Request, res: Response) => {
     };
 
     const created = await dbService.createOrder(newOrder);
+    
+    // Broadcast new order to vendor clients
+    broadcastToVendor(data.vendorId, {
+      type: 'new_order',
+      order: created
+    });
+    
     res.status(201).json(created);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -571,6 +579,13 @@ router.patch('/orders/:id/status', async (req: Request, res: Response) => {
     if (!status) return res.status(400).json({ error: 'status is required' });
     const updated = await dbService.updateOrderStatus(req.params.id, status);
     if (!updated) return res.status(404).json({ error: 'Order not found' });
+    
+    // Broadcast order status update to vendor clients
+    broadcastToVendor(updated.vendorId, {
+      type: 'order_status_update',
+      order: updated
+    });
+    
     res.json(updated);
   } catch (err: any) {
     res.status(500).json({ error: err.message });

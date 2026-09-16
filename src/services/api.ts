@@ -30,7 +30,9 @@ export interface DbStatusData {
   message: string;
 }
 
-export const API_BASE = 'https://digital-menu-backend-theta.vercel.app/api';
+export const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+  ? 'http://localhost:3000/api' 
+  : 'https://digital-menu-backend-theta.vercel.app/api';
 
 function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem('authToken');

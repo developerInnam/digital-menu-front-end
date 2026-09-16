@@ -17,6 +17,7 @@ import {
 import { SubscriptionPlan } from '../data/subscriptionPlans';
 import { soundManager } from '../utils/audio';
 import { api, DbStatusData } from '../services/api';
+import { wsService, WebSocketMessage } from '../services/websocket';
 
 interface AppContextType {
   // Navigation & View
@@ -298,29 +299,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     loadInitialData();
   }, [loadInitialData]);
 
-  // Periodic polling for live orders from Express server (real-time KDS & Live POS sync)
-  const prevOrderCountRef = useRef(orders.length);
+  // WebSocket connection for real-time order updates
   useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        if (!activeVendor) return;
-        const liveOrders = await api.getOrders({ vendorId: activeVendor.id });
-        if (liveOrders && Array.isArray(liveOrders)) {
+    if (activeVendor) {
+      wsService.connect(activeVendor.id);
+      
+      const handleWebSocketMessage = (message: WebSocketMessage) => {
+        if (message.type === 'new_order') {
           setOrders(prev => {
-            // Check if there are new orders to trigger sound
-            if (liveOrders.length > prevOrderCountRef.current && soundAlertEnabled) {
-              soundManager.playNewOrderDing();
+            const existingIndex = prev.findIndex(o => o.id === message.order.id);
+            if (existingIndex === -1) {
+              // New order - play sound
+              if (soundAlertEnabled) {
+                soundManager.playNewOrderDing();
+              }
+              return [message.order, ...prev];
             }
-            prevOrderCountRef.current = liveOrders.length;
-            return liveOrders;
+            return prev;
           });
+        } else if (message.type === 'order_status_update') {
+          setOrders(prev => 
+            prev.map(o => o.id === message.order.id ? message.order : o)
+          );
         }
-      } catch {
-        // Polling gracefully ignores transient errors
-      }
-    }, 4000);
+      };
 
-    return () => clearInterval(interval);
+      wsService.onMessage(handleWebSocketMessage);
+
+      return () => {
+        wsService.removeMessageHandler(handleWebSocketMessage);
+        wsService.disconnect();
+      };
+    }
   }, [activeVendor, soundAlertEnabled]);
 
   const setActiveVendor = (vendorOrId: Vendor | string) => {

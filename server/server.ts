@@ -1,6 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import { createServer } from 'http';
+import { WebSocketServer, WebSocket } from 'ws';
 import apiRoutes from './routes.js';
 import { initDatabase } from './db.js';
 
@@ -8,6 +10,7 @@ dotenv.config();
 dotenv.config({ path: '.env.local' });
 
 const app = express();
+const server = createServer(app);
 
 // Middleware for parsing JSON and urlencoded data
 app.use(express.json({ limit: '10mb' }));
@@ -72,14 +75,55 @@ app.use((err: any, req: any, res: any, next: any) => {
   });
 });
 
+// WebSocket Server for real-time order updates
+const wss = new WebSocketServer({ server, path: '/ws' });
+
+const clients = new Map<WebSocket, string>(); // Map WebSocket to vendorId
+
+wss.on('connection', (ws: WebSocket) => {
+  console.log('🔌 [WebSocket] New client connected');
+  
+  ws.on('message', (message: string) => {
+    try {
+      const data = JSON.parse(message.toString());
+      if (data.type === 'subscribe' && data.vendorId) {
+        clients.set(ws, data.vendorId);
+        console.log(`📡 [WebSocket] Client subscribed to vendor: ${data.vendorId}`);
+      }
+    } catch (err) {
+      console.error('WebSocket message error:', err);
+    }
+  });
+
+  ws.on('close', () => {
+    clients.delete(ws);
+    console.log('🔌 [WebSocket] Client disconnected');
+  });
+
+  ws.on('error', (error) => {
+    console.error('WebSocket error:', error);
+  });
+});
+
+// Broadcast function to send updates to specific vendor clients
+export function broadcastToVendor(vendorId: string, data: any) {
+  const message = JSON.stringify(data);
+  clients.forEach((clientVendorId, ws) => {
+    if (clientVendorId === vendorId && ws.readyState === WebSocket.OPEN) {
+      ws.send(message);
+    }
+  });
+}
+
 // For Vercel deployment - export the app
 export default app;
 
 // For local development
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, '0.0.0.0', () => {
+  const PORT = Number(process.env.PORT) || 3000;
+  server.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 [Server] Node.js Express server running on http://0.0.0.0:${PORT}`);
     console.log(`🍃 [Database] MongoDB & REST API endpoints ready at http://0.0.0.0:${PORT}/api`);
+    console.log(`🔌 [WebSocket] WebSocket server ready at ws://0.0.0.0:${PORT}/ws`);
   });
 }

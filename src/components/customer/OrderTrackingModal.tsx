@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { translations } from '../../utils/translations';
 import confetti from 'canvas-confetti';
+import { wsService, WebSocketMessage } from '../../services/websocket';
 import {
   X,
   CheckCircle2,
@@ -45,6 +46,22 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ orderId,
       // Ignore if unavailable
     }
   }, []);
+
+  // Listen for real-time order status updates via WebSocket
+  useEffect(() => {
+    const handleWebSocketMessage = (message: WebSocketMessage) => {
+      if (message.type === 'order_status_update' && message.order.id === orderId) {
+        // Order status updated - will automatically reflect from orders context
+        console.log('📡 [OrderTracking] Order status updated:', message.order.orderStatus);
+      }
+    };
+
+    wsService.onMessage(handleWebSocketMessage);
+
+    return () => {
+      wsService.removeMessageHandler(handleWebSocketMessage);
+    };
+  }, [orderId]);
 
   if (!order) return null;
 

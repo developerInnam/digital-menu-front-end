@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 import { Vendor } from '../../types';
 import { SubscriptionPlanModal } from '../common/SubscriptionPlanModal';
@@ -21,11 +22,13 @@ import {
   Lock,
   Settings,
   Edit2,
-  Trash2
+  Trash2,
+  LogOut
 } from 'lucide-react';
 
 export const AdminPanel: React.FC = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const {
     vendors,
     activeVendor,
@@ -227,6 +230,16 @@ export const AdminPanel: React.FC = () => {
             >
               <Store className="w-4 h-4 text-orange-600" />
               <span>Self-Serve Portal</span>
+            </button>
+            <button
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Logout</span>
             </button>
           </div>
         </div>

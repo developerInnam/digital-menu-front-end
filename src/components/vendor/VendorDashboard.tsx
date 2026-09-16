@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import { OverviewAnalyticsTab } from './tabs/OverviewAnalyticsTab';
 import { OrdersTab } from './tabs/OrdersTab';
 import { MenuManagementTab } from './tabs/MenuManagementTab';
@@ -20,7 +21,8 @@ import {
   Tag,
   Users,
   Store,
-  ExternalLink
+  ExternalLink,
+  LogOut
 } from 'lucide-react';
 
 interface VendorDashboardProps {
@@ -31,6 +33,7 @@ export const VendorDashboard: React.FC<VendorDashboardProps> = ({ initialTab = '
   const { vendorSlug } = useParams<{ vendorSlug: string }>();
   const navigate = useNavigate();
   const { vendors, activeVendor, setActiveVendor, orders } = useApp();
+  const { logout } = useAuth();
 
   const [activeTab, setActiveTab] = useState<string>(initialTab);
 
@@ -110,13 +113,25 @@ export const VendorDashboard: React.FC<VendorDashboardProps> = ({ initialTab = '
             })}
           </div>
 
-          <button
-            onClick={() => activeVendor && navigate(`/${activeVendor.slug}`)}
-            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-orange-600 rounded-xl hover:bg-orange-50 border border-slate-200 transition-colors shrink-0"
-          >
-            <span>Preview QR Menu</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => activeVendor && navigate(`/${activeVendor.slug}`)}
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-orange-600 rounded-xl hover:bg-orange-50 border border-slate-200 transition-colors shrink-0"
+            >
+              <span>Preview QR Menu</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-red-600 rounded-xl hover:bg-red-50 border border-slate-200 transition-colors shrink-0"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
+          </div>
         </div>
       </div>
 
