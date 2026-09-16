@@ -10,6 +10,8 @@ interface ProtectedRouteProps {
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
   const { isAuthenticated, user, isLoading } = useAuth();
 
+  console.log('🔒 [ProtectedRoute] Check:', { isAuthenticated, user, allowedRoles, isLoading });
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -22,12 +24,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
   }
 
   if (!isAuthenticated) {
+    console.log('🔒 [ProtectedRoute] Not authenticated, redirecting to login');
     return <Navigate to="/login" replace />;
   }
 
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+    console.log('🔒 [ProtectedRoute] Role mismatch:', { userRole: user.role, allowedRoles });
     return <Navigate to="/" replace />;
   }
 
+  console.log('✅ [ProtectedRoute] Access granted');
   return <>{children}</>;
 };

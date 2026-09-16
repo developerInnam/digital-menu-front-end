@@ -37,7 +37,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
+        console.log('✅ [Auth] Restored session from localStorage:', JSON.parse(storedUser));
       } catch (error) {
+        console.error('❌ [Auth] Failed to parse stored user:', error);
         // Clear invalid data
         localStorage.removeItem('authToken');
         localStorage.removeItem('user');

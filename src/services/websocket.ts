@@ -24,7 +24,7 @@ class WebSocketService {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? 'localhost:3000'
-      : window.location.host;
+      : 'digital-menu-backend-theta.vercel.app';
     
     const wsUrl = `${protocol}//${host}/ws`;
     
