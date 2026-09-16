@@ -45,20 +45,46 @@ export interface DbStatusInfo {
 }
 
 // In-memory persistent cache for fallback or instant offline preview
-const memoryDb = {
-  vendors: [...initialVendors],
-  categories: [...initialCategories],
-  products: [...initialProducts],
-  orders: [...initialOrders],
-  tables: [...initialTables],
-  coupons: [...initialCoupons],
-  customers: [...initialCustomers],
+// Initialize with hashed passwords for admin and demo users
+const initializeMemoryDb = async () => {
+  const vendorsWithHashedPasswords = await Promise.all(
+    [adminUser, demoVendor].map(async (vendor) => {
+      if (vendor.password) {
+        return {
+          ...vendor,
+          password: await hashPassword(vendor.password)
+        };
+      }
+      return vendor;
+    })
+  );
+  return {
+    vendors: vendorsWithHashedPasswords,
+    categories: [...initialCategories],
+    products: [...initialProducts],
+    orders: [...initialOrders],
+    tables: [...initialTables],
+    coupons: [...initialCoupons],
+    customers: [...initialCustomers],
+    subscriptionPlans: [] as SubscriptionPlan[]
+  };
+};
+
+let memoryDb = {
+  vendors: [],
+  categories: [],
+  products: [],
+  orders: [],
+  tables: [],
+  coupons: [],
+  customers: [],
   subscriptionPlans: [] as SubscriptionPlan[]
 };
 
 let isMongoConnected = false;
 let connectionAttemptFinished = false;
 let connectionErrorMessage = '';
+let isSeeded = false;
 
 export async function initDatabase(): Promise<void> {
   const uri = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGODB_URL;
@@ -91,6 +117,14 @@ export async function initDatabase(): Promise<void> {
     connectionErrorMessage = err.message || 'Connection timed out';
     console.warn(`⚠️ [MongoDB] Could not connect to remote MongoDB: ${connectionErrorMessage}`);
     console.log('⚡ [Database] Fallback in-memory MongoDB store is active and serving dynamic requests seamlessly.');
+  }
+}
+
+// Helper function to ensure database is seeded before data access (for serverless environments)
+async function ensureSeeded() {
+  if (!isMongoConnected && !isSeeded && memoryDb.vendors.length === 0) {
+    await seedDatabaseIfEmpty();
+    isSeeded = true;
   }
 }
 
@@ -175,6 +209,7 @@ export async function seedDatabaseIfEmpty(force = false): Promise<{ seeded: bool
         }
 
         console.log('🌱 [MongoDB] Seeded initial restaurant data into MongoDB collections.');
+        isSeeded = true;
         return { seeded: true, message: 'Seeded initial restaurant data into MongoDB.' };
       }
       return { seeded: false, message: 'Database already populated.' };
@@ -184,10 +219,13 @@ export async function seedDatabaseIfEmpty(force = false): Promise<{ seeded: bool
     }
   } else {
     // Reset in-memory database
-    if (force) {
+    if (force || memoryDb.vendors.length === 0) {
+      // Use admin and demo vendor if in-memory store is empty
+      const vendorsToSeed = memoryDb.vendors.length === 0 ? [adminUser, demoVendor] : initialVendors;
+      
       // Hash passwords for in-memory store
       const vendorsWithHashedPasswords = await Promise.all(
-        initialVendors.map(async (vendor) => {
+        vendorsToSeed.map(async (vendor) => {
           if (vendor.password) {
             return {
               ...vendor,
@@ -205,6 +243,9 @@ export async function seedDatabaseIfEmpty(force = false): Promise<{ seeded: bool
       memoryDb.tables = [...initialTables];
       memoryDb.coupons = [...initialCoupons];
       memoryDb.customers = [...initialCustomers];
+      
+      console.log(`🌱 [In-Memory] Seeded ${vendorsWithHashedPasswords.length} vendors to in-memory store.`);
+      isSeeded = true;
       return { seeded: true, message: 'Reset and seeded in-memory store.' };
     }
     return { seeded: false, message: 'In-memory store already populated.' };
@@ -269,6 +310,7 @@ export async function getDbStatus(): Promise<DbStatusInfo> {
 export const dbService = {
   // Vendors
   async getVendors() {
+    await ensureSeeded();
     if (isMongoConnected) {
       return await VendorModel.find({}).lean();
     }
@@ -276,6 +318,7 @@ export const dbService = {
   },
 
   async getVendorById(id: string) {
+    await ensureSeeded();
     if (isMongoConnected) {
       return await VendorModel.findOne({ id }).lean();
     }
@@ -283,6 +326,7 @@ export const dbService = {
   },
 
   async createVendor(vendorData: any) {
+    await ensureSeeded();
     if (isMongoConnected) {
       const doc = await VendorModel.create(vendorData);
       return doc.toObject();
@@ -292,6 +336,7 @@ export const dbService = {
   },
 
   async updateVendor(id: string, updates: any) {
+    await ensureSeeded();
     if (isMongoConnected) {
       const updated = await VendorModel.findOneAndUpdate({ id }, updates, { new: true }).lean();
       return updated;
@@ -305,6 +350,7 @@ export const dbService = {
   },
 
   async deleteVendor(id: string) {
+    await ensureSeeded();
     if (isMongoConnected) {
       await VendorModel.deleteOne({ id });
       return true;
@@ -319,6 +365,7 @@ export const dbService = {
 
   // Categories
   async getCategories(vendorId?: string) {
+    await ensureSeeded();
     if (isMongoConnected) {
       const query = vendorId ? { vendorId } : {};
       return await CategoryModel.find(query).sort({ displayOrder: 1 }).lean();
@@ -332,6 +379,7 @@ export const dbService = {
   },
 
   async getCategoryById(id: string) {
+    await ensureSeeded();
     if (isMongoConnected) {
       return await CategoryModel.findOne({ id }).lean();
     }
@@ -339,6 +387,7 @@ export const dbService = {
   },
 
   async createCategory(catData: any) {
+    await ensureSeeded();
     if (isMongoConnected) {
       const doc = await CategoryModel.create(catData);
       return doc.toObject();
@@ -348,6 +397,7 @@ export const dbService = {
   },
 
   async updateCategory(id: string, updates: any) {
+    await ensureSeeded();
     if (isMongoConnected) {
       return await CategoryModel.findOneAndUpdate({ id }, updates, { new: true }).lean();
     }
@@ -360,6 +410,7 @@ export const dbService = {
   },
 
   async deleteCategory(id: string) {
+    await ensureSeeded();
     if (isMongoConnected) {
       await CategoryModel.deleteOne({ id });
       return true;
@@ -373,6 +424,7 @@ export const dbService = {
   },
 
   async reorderCategories(vendorId: string, orderedIds: string[]) {
+    await ensureSeeded();
     if (isMongoConnected) {
       const operations = orderedIds.map((id, index) =>
         CategoryModel.updateOne({ id, vendorId }, { $set: { displayOrder: index + 1 } })
@@ -392,6 +444,7 @@ export const dbService = {
 
   // Products
   async getProducts(filter: { vendorId?: string; categoryId?: string; search?: string; vegType?: string }) {
+    await ensureSeeded();
     if (isMongoConnected) {
       const query: any = {};
       if (filter.vendorId) query.vendorId = filter.vendorId;
@@ -421,6 +474,7 @@ export const dbService = {
   },
 
   async getProductById(id: string) {
+    await ensureSeeded();
     if (isMongoConnected) {
       return await ProductModel.findOne({ id }).lean();
     }
@@ -428,6 +482,7 @@ export const dbService = {
   },
 
   async createProduct(productData: any) {
+    await ensureSeeded();
     if (isMongoConnected) {
       const doc = await ProductModel.create(productData);
       return doc.toObject();
@@ -437,6 +492,7 @@ export const dbService = {
   },
 
   async updateProduct(id: string, updates: any) {
+    await ensureSeeded();
     if (isMongoConnected) {
       return await ProductModel.findOneAndUpdate({ id }, updates, { new: true }).lean();
     }
@@ -449,6 +505,7 @@ export const dbService = {
   },
 
   async deleteProduct(id: string) {
+    await ensureSeeded();
     if (isMongoConnected) {
       await ProductModel.deleteOne({ id });
       return true;
@@ -463,6 +520,7 @@ export const dbService = {
 
   // Orders
   async getOrders(filter: { vendorId?: string; phone?: string; status?: string }) {
+    await ensureSeeded();
     if (isMongoConnected) {
       const query: any = {};
       if (filter.vendorId) query.vendorId = filter.vendorId;
@@ -482,6 +540,7 @@ export const dbService = {
   },
 
   async getOrderById(id: string) {
+    await ensureSeeded();
     if (isMongoConnected) {
       return await OrderModel.findOne({ id }).lean();
     }
@@ -489,6 +548,7 @@ export const dbService = {
   },
 
   async createOrder(orderData: any) {
+    await ensureSeeded();
     if (isMongoConnected) {
       const doc = await OrderModel.create(orderData);
       // Also update or create customer record
@@ -501,6 +561,7 @@ export const dbService = {
   },
 
   async updateOrderStatus(id: string, status: string) {
+    await ensureSeeded();
     if (isMongoConnected) {
       return await OrderModel.findOneAndUpdate({ id }, { orderStatus: status }, { new: true }).lean();
     }
@@ -513,6 +574,7 @@ export const dbService = {
   },
 
   async addOrderReview(id: string, rating: number, comment: string) {
+    await ensureSeeded();
     const review = { rating, comment, createdAt: new Date().toISOString() };
     if (isMongoConnected) {
       return await OrderModel.findOneAndUpdate({ id }, { review }, { new: true }).lean();
@@ -527,6 +589,7 @@ export const dbService = {
 
   // Tables
   async getTables(vendorId?: string) {
+    await ensureSeeded();
     if (isMongoConnected) {
       const query = vendorId ? { vendorId } : {};
       return await TableModel.find(query).lean();
@@ -538,6 +601,7 @@ export const dbService = {
   },
 
   async createTable(tableData: any) {
+    await ensureSeeded();
     if (isMongoConnected) {
       const doc = await TableModel.create(tableData);
       return doc.toObject();
@@ -547,6 +611,7 @@ export const dbService = {
   },
 
   async deleteTable(id: string) {
+    await ensureSeeded();
     if (isMongoConnected) {
       await TableModel.deleteOne({ id });
       return true;
@@ -561,6 +626,7 @@ export const dbService = {
 
   // Coupons
   async getCoupons(vendorId?: string) {
+    await ensureSeeded();
     if (isMongoConnected) {
       const query = vendorId ? { vendorId } : {};
       return await CouponModel.find(query).lean();
@@ -572,6 +638,7 @@ export const dbService = {
   },
 
   async createCoupon(couponData: any) {
+    await ensureSeeded();
     if (isMongoConnected) {
       const doc = await CouponModel.create(couponData);
       return doc.toObject();
@@ -581,6 +648,7 @@ export const dbService = {
   },
 
   async toggleCoupon(id: string) {
+    await ensureSeeded();
     if (isMongoConnected) {
       const coupon = await CouponModel.findOne({ id });
       if (coupon) {
@@ -600,6 +668,7 @@ export const dbService = {
 
   // Customers
   async getCustomers(vendorId?: string) {
+    await ensureSeeded();
     if (isMongoConnected) {
       const query = vendorId ? { vendorId } : {};
       return await CustomerModel.find(query).sort({ totalSpent: -1 }).lean();
@@ -613,6 +682,7 @@ export const dbService = {
   },
 
   async upsertCustomerFromOrder(order: any) {
+    await ensureSeeded();
     const { vendorId, customerName, customerPhone, total, items } = order;
     if (!customerPhone) return;
 
@@ -682,6 +752,7 @@ export const dbService = {
 
   // Subscription Plans
   async getSubscriptionPlans() {
+    await ensureSeeded();
     if (isMongoConnected) {
       return await SubscriptionPlanModel.find({}).lean();
     }
@@ -689,6 +760,7 @@ export const dbService = {
   },
 
   async getActiveSubscriptionPlans() {
+    await ensureSeeded();
     if (isMongoConnected) {
       return await SubscriptionPlanModel.find({ isActive: true }).lean();
     }
@@ -696,6 +768,7 @@ export const dbService = {
   },
 
   async getSubscriptionPlanById(id: string) {
+    await ensureSeeded();
     if (isMongoConnected) {
       return await SubscriptionPlanModel.findOne({ id }).lean();
     }
@@ -703,6 +776,7 @@ export const dbService = {
   },
 
   async createSubscriptionPlan(planData: any) {
+    await ensureSeeded();
     if (isMongoConnected) {
       const doc = await SubscriptionPlanModel.create(planData);
       return doc.toObject();
@@ -712,6 +786,7 @@ export const dbService = {
   },
 
   async updateSubscriptionPlan(id: string, updates: any) {
+    await ensureSeeded();
     if (isMongoConnected) {
       const updated = await SubscriptionPlanModel.findOneAndUpdate({ id }, updates, { new: true }).lean();
       return updated;
@@ -725,6 +800,7 @@ export const dbService = {
   },
 
   async deleteSubscriptionPlan(id: string) {
+    await ensureSeeded();
     if (isMongoConnected) {
       await SubscriptionPlanModel.deleteOne({ id });
       return true;
@@ -738,6 +814,7 @@ export const dbService = {
   },
 
   async setSubscriptionPlans(plans: any[]) {
+    await ensureSeeded();
     if (isMongoConnected) {
       await SubscriptionPlanModel.deleteMany({});
       const docs = await SubscriptionPlanModel.insertMany(plans);
