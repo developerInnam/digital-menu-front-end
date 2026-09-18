@@ -1,0 +1,1 @@
+1. when the customer scan the table QR that QR want to navigate the particular resturant menu. for example if the customer scanned the Table 1 QR using that the customer will be navigated to the particular resturant menu items and it shows table. and once he placed the order. the order will be placed from the table 1 to that particular resturant 

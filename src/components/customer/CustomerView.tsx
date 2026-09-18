@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { translations } from '../../utils/translations';
 import { Product } from '../../types';
@@ -26,6 +26,7 @@ import {
 
 export const CustomerView: React.FC = () => {
   const { vendorSlug } = useParams<{ vendorSlug: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const {
     vendors,
@@ -64,11 +65,20 @@ export const CustomerView: React.FC = () => {
       if (vendor) {
         setActiveVendor(vendor.id);
       } else {
-        // Vendor not found, redirect to landing
+        // Vendor not found - show error and redirect
+        alert(`Restaurant "${vendorSlug}" not found. Redirecting to home page...`);
         navigate('/');
       }
     }
   }, [vendorSlug, vendors, setActiveVendor, navigate]);
+
+  // Set table number from URL query parameter
+  useEffect(() => {
+    const tableParam = searchParams.get('table');
+    if (tableParam) {
+      setActiveTableNumber(tableParam);
+    }
+  }, [searchParams, setActiveTableNumber]);
 
   const t = translations[language];
 

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import { QrCode, X, Check, Users, Sparkles, MapPin } from 'lucide-react';
+import { QrCode, X, Check, Users, Sparkles, MapPin, Info } from 'lucide-react';
 
 export const TableSelectionModal: React.FC = () => {
   const { activeVendor, tables, activeTableNumber, setActiveTableNumber, isTableModalOpen, setIsTableModalOpen } = useApp();
@@ -9,9 +9,21 @@ export const TableSelectionModal: React.FC = () => {
 
   const [customTable, setCustomTable] = useState('');
   const [selectedTable, setSelectedTable] = useState(activeTableNumber);
+  const [isQRScanned, setIsQRScanned] = useState(false);
+
+  // Detect if table was set from QR code by checking if it differs from default
+  useEffect(() => {
+    // Default table in AppContext is 'Table 4', any other value likely from QR scan
+    if (activeTableNumber && activeTableNumber !== 'Table 4') {
+      setIsQRScanned(true);
+    } else {
+      setIsQRScanned(false);
+    }
+  }, [activeTableNumber]);
 
   const handleSelectAndConfirm = (tableStr: string) => {
     setActiveTableNumber(tableStr);
+    setIsQRScanned(false); // Clear QR flag when manually changed
     setIsTableModalOpen(false);
   };
 
@@ -51,21 +63,39 @@ export const TableSelectionModal: React.FC = () => {
         </div>
 
         {/* Current Active Table Pill */}
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between">
+        <div className={`p-3 rounded-2xl flex items-center justify-between ${isQRScanned ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'}`}>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs text-amber-900 font-medium">Currently Selected:</span>
+            <div>
+              <span className="text-xs font-medium block">
+                {isQRScanned ? 'QR Code Scanned Table:' : 'Currently Selected:'}
+              </span>
+              {isQRScanned && (
+                <span className="text-[10px] text-emerald-700 flex items-center gap-1">
+                  <QrCode className="w-3 h-3" />
+                  Auto-assigned from scan
+                </span>
+              )}
+            </div>
           </div>
-          <span className="text-xs font-bold text-amber-950 px-2.5 py-0.5 bg-white rounded-lg border border-amber-300 shadow-2xs">
+          <span className={`text-xs font-bold px-2.5 py-0.5 bg-white rounded-lg border shadow-2xs ${isQRScanned ? 'text-emerald-950 border-emerald-300' : 'text-amber-950 border-amber-300'}`}>
             {activeTableNumber}
           </span>
         </div>
 
         {/* Table Grid */}
         <div className="space-y-2">
-          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-            Available Tables ({tables.length})
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+              Available Tables ({tables.length})
+            </label>
+            {isQRScanned && (
+              <div className="flex items-center gap-1 text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                <Info className="w-3 h-3" />
+                <span>Can change if needed</span>
+              </div>
+            )}
+          </div>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-56 overflow-y-auto pr-1">
             {tables.map(tbl => {
               const tableLabel = `Table ${tbl.tableNumber}`;

@@ -37,7 +37,7 @@ export const TableQrTab: React.FC = () => {
 
   // Generate target URL for this table
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://dinesmart.restaurant';
-  const tableUrl = `${origin}?vendor=${activeVendor.slug}&table=${encodeURIComponent(
+  const tableUrl = `${origin}/${activeVendor.slug}?table=${encodeURIComponent(
     `Table ${selectedTableNumber}`
   )}`;
 
