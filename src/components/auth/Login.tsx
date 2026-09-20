@@ -21,6 +21,9 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setError('');
 
     try {
+      console.log('Attempting login to:', `${API_BASE}/auth/login`);
+      console.log('Login payload:', { email, role });
+
       const response = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: {
@@ -29,7 +32,11 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         body: JSON.stringify({ email, password }),
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
       const data = await response.json();
+      console.log('Response data:', data);
 
       if (!response.ok) {
         console.error('Login error:', data);
@@ -51,6 +58,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         navigate(`/vendor/${data.user.slug}/dashboard`);
       }
     } catch (err: any) {
+      console.error('Login exception:', err);
       setError(err.message || 'Login failed. Please try again.');
     } finally {
       setIsLoading(false);

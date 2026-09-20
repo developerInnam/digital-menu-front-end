@@ -19,6 +19,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // CORS configuration
 const allowedOrigins = [
   'http://localhost:5173',
+  'http://localhost:5174',
   'http://localhost:3000',
   'https://digital-menu-eight.vercel.app',
   'https://digital-menu.vercel.app',

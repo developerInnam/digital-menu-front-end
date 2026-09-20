@@ -1,1 +1,2 @@
-1. when the customer scan the table QR that QR want to navigate the particular resturant menu. for example if the customer scanned the Table 1 QR using that the customer will be navigated to the particular resturant menu items and it shows table. and once he placed the order. the order will be placed from the table 1 to that particular resturant 
+1. When the admin registering the vendor he can able to add the vendor email and password. and what the vendor will login using that password.
+2. this the front end domain https://digital-menu-front-end-ashen.vercel.app/. 
