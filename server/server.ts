@@ -27,6 +27,7 @@ const allowedOrigins = [
   'https://digital-menu-front-end.vercel.app',
   'https://digital-menu-front-end-ashen.vercel.app',
   'https://digital-menu-backend.vercel.app',
+  'https://digital-menu-backend-theta.vercel.app',
   process.env.CLIENT_URL || process.env.FRONTEND_URL || ''
 ].filter(Boolean);
 

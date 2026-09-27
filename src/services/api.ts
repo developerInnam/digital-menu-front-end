@@ -30,8 +30,10 @@ export interface DbStatusData {
   message: string;
 }
 
-// For development, use the Vite proxy. For production, backend needs proper deployment
-export const API_BASE = '/api';
+// For development, use the Vite proxy. For production, use the backend URL
+export const API_BASE = import.meta.env.DEV 
+  ? '/api' 
+  : 'https://digital-menu-backend-theta.vercel.app/api';
 
 function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem('authToken');

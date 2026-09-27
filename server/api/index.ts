@@ -24,6 +24,7 @@ const allowedOrigins = [
   'https://digital-menu-front-end.vercel.app',
   'https://digital-menu-front-end-ashen.vercel.app',
   'https://digital-menu-backend.vercel.app',
+  'https://digital-menu-backend-theta.vercel.app',
   process.env.CLIENT_URL || process.env.FRONTEND_URL || ''
 ].filter(Boolean);
 
@@ -82,5 +83,7 @@ export function broadcastToVendor(vendorId: string, data: any) {
   console.log(`[Broadcast] Would send to vendor ${vendorId}:`, data);
 }
 
-// For Vercel deployment - export the app
-export default app;
+// Vercel serverless function handler
+export default function handler(req: any, res: any) {
+  return app(req, res);
+}
