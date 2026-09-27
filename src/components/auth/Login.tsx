@@ -33,6 +33,9 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setError('');
 
     try {
+      console.log('Attempting login to:', `${API_BASE}/auth/login`);
+      console.log('API_BASE:', API_BASE);
+      
       const response = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: {
@@ -41,12 +44,18 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
+      // Check if response is OK before trying to parse JSON
       if (!response.ok) {
-        console.error('Login error:', data);
-        throw new Error(data.error || 'Login failed');
+        const errorText = await response.text();
+        console.error('Login error response:', errorText);
+        throw new Error(errorText || `Login failed with status ${response.status}`);
       }
+
+      const data = await response.json();
+      console.log('Login response data:', data);
 
       // Store token in localStorage
       localStorage.setItem('authToken', data.token);
@@ -64,6 +73,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         navigate(`/vendor/${data.user.slug}/dashboard`);
       }
     } catch (err: any) {
+      console.error('Login error:', err);
       setError(err.message || 'Login failed. Please try again.');
     } finally {
       setIsLoading(false);

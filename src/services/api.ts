@@ -30,7 +30,7 @@ export interface DbStatusData {
   message: string;
 }
 
-// For development, use the Vite proxy. For production, you'll need to configure the backend URL
+// For development, use the Vite proxy. For production, the backend needs proper deployment
 export const API_BASE = '/api';
 
 function getAuthHeaders(): HeadersInit {
