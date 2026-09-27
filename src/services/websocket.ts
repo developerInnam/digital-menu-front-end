@@ -30,6 +30,13 @@ class WebSocketService {
     
     console.log(`🔌 [WebSocket] Connecting to ${wsUrl}`);
     
+    // On Vercel, WebSocket is not supported - use polling instead
+    if (host.includes('vercel.app')) {
+      console.warn('⚠️ [WebSocket] Vercel does not support WebSockets in serverless functions. Real-time updates disabled.');
+      this.reconnectAttempts = this.maxReconnectAttempts; // Skip reconnection attempts
+      return;
+    }
+    
     this.ws = new WebSocket(wsUrl);
 
     this.ws.onopen = () => {
