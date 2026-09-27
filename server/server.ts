@@ -121,10 +121,12 @@ export function broadcastToVendor(vendorId: string, data: any) {
 // For Vercel deployment - export the app
 export default app;
 
-// For local development - always start server
-const PORT = Number(process.env.PORT) || 3000;
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 [Server] Node.js Express server running on http://0.0.0.0:${PORT}`);
-  console.log(`🍃 [Database] MongoDB & REST API endpoints ready at http://0.0.0.0:${PORT}/api`);
-  console.log(`🔌 [WebSocket] WebSocket server ready at ws://0.0.0.0:${PORT}/ws`);
-});
+// For local development - only start server if not in Vercel production
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = Number(process.env.PORT) || 5000;
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 [Server] Node.js Express server running on http://0.0.0.0:${PORT}`);
+    console.log(`🍃 [Database] MongoDB & REST API endpoints ready at http://0.0.0.0:${PORT}/api`);
+    console.log(`🔌 [WebSocket] WebSocket server ready at ws://0.0.0.0:${PORT}/ws`);
+  });
+}
