@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Lock, Mail, Store, ShieldCheck, ArrowRight } from 'lucide-react';
-import { API_BASE } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 interface LoginProps {
   onLoginSuccess?: (user: any) => void;
@@ -10,6 +10,7 @@ interface LoginProps {
 export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'vendor' | 'admin'>('vendor');
@@ -33,44 +34,27 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setError('');
 
     try {
-      console.log('Attempting login to:', `${API_BASE}/auth/login`);
-      console.log('API_BASE:', API_BASE);
+      console.log('Attempting login with:', { email, role });
       
-      const response = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
-      // Check if response is OK before trying to parse JSON
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Login error response:', errorText);
-        throw new Error(errorText || `Login failed with status ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Login response data:', data);
-
-      // Store token in localStorage
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      await login(email, password);
 
       if (onLoginSuccess) {
-        onLoginSuccess(data.user);
+        // Get user from localStorage after login
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          onLoginSuccess(JSON.parse(storedUser));
+        }
       }
 
-      // Redirect based on role and intended route
-      if (data.user.role === 'admin') {
-        navigate('/admin');
-      } else {
-        // Vendor - redirect to their dashboard
-        navigate(`/vendor/${data.user.slug}/dashboard`);
+      // Redirect based on role
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        if (user.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate(`/vendor/${user.slug}/dashboard`);
+        }
       }
     } catch (err: any) {
       console.error('Login error:', err);
