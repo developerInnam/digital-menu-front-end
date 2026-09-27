@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Lock, Mail, Store, ShieldCheck, ArrowRight } from 'lucide-react';
 import { API_BASE } from '../../services/api';
 
@@ -9,11 +9,23 @@ interface LoginProps {
 
 export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'vendor' | 'admin'>('vendor');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Detect if accessing via /vendor route to set default role
+  useEffect(() => {
+    if (location.pathname === '/vendor') {
+      setRole('vendor');
+    } else if (location.pathname === '/admin') {
+      setRole('admin');
+    } else {
+      setRole('vendor'); // Default to vendor for general login
+    }
+  }, [location.pathname]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,9 +33,6 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setError('');
 
     try {
-      console.log('Attempting login to:', `${API_BASE}/auth/login`);
-      console.log('Login payload:', { email, role });
-
       const response = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: {
@@ -32,11 +41,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         body: JSON.stringify({ email, password }),
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
       const data = await response.json();
-      console.log('Response data:', data);
 
       if (!response.ok) {
         console.error('Login error:', data);
@@ -51,14 +56,14 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         onLoginSuccess(data.user);
       }
 
-      // Redirect based on role
+      // Redirect based on role and intended route
       if (data.user.role === 'admin') {
         navigate('/admin');
       } else {
+        // Vendor - redirect to their dashboard
         navigate(`/vendor/${data.user.slug}/dashboard`);
       }
     } catch (err: any) {
-      console.error('Login exception:', err);
       setError(err.message || 'Login failed. Please try again.');
     } finally {
       setIsLoading(false);
@@ -74,40 +79,52 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             <Store className="w-8 h-8" />
           </div>
           <h1 className="text-2xl font-bold text-white">Digital Menu</h1>
-          <p className="text-slate-400 text-sm mt-1">Restaurant Management System</p>
+          <p className="text-slate-400 text-sm mt-1">
+            {role === 'admin' ? 'Admin Portal' : 'Restaurant Management System'}
+          </p>
         </div>
 
         {/* Login Card */}
         <div className="bg-white rounded-3xl p-8 shadow-2xl">
-          <h2 className="text-xl font-bold text-slate-900 mb-6">Sign In</h2>
+          <h2 className="text-xl font-bold text-slate-900 mb-6">
+            {role === 'admin' ? 'Admin Sign In' : 'Vendor Sign In'}
+          </h2>
 
-          {/* Role Toggle */}
-          <div className="flex gap-2 mb-6 p-1 bg-slate-100 rounded-xl">
-            <button
-              type="button"
-              onClick={() => setRole('vendor')}
-              className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all ${
-                role === 'vendor'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Store className="w-4 h-4 inline mr-1" />
-              Vendor
-            </button>
-            <button
-              type="button"
-              onClick={() => setRole('admin')}
-              className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all ${
-                role === 'admin'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <ShieldCheck className="w-4 h-4 inline mr-1" />
-              Admin
-            </button>
-          </div>
+          {/* Role Toggle - Only show on generic login page */}
+          {location.pathname === '/' || location.pathname === '/login' ? (
+            <div className="flex gap-2 mb-6 p-1 bg-slate-100 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setRole('vendor')}
+                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all ${
+                  role === 'vendor'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Store className="w-4 h-4 inline mr-1" />
+                Vendor
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole('admin')}
+                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all ${
+                  role === 'admin'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <ShieldCheck className="w-4 h-4 inline mr-1" />
+                Admin
+              </button>
+            </div>
+          ) : (
+            <div className="mb-6 p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <p className="text-xs text-slate-600 text-center">
+                {role === 'admin' ? '🔒 Admin Access Portal' : '🏪 Vendor Portal'}
+              </p>
+            </div>
+          )}
 
           {error && (
             <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl text-sm text-rose-700">
@@ -160,14 +177,42 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-slate-100 text-center">
-            <button
-              type="button"
-              onClick={() => navigate('/')}
-              className="text-sm text-slate-600 hover:text-slate-900 font-medium"
-            >
-              Back to Home
-            </button>
+          {/* Navigation links based on current route */}
+          <div className="mt-6 pt-6 border-t border-slate-100 text-center space-y-2">
+            {location.pathname === '/vendor' ? (
+              <button
+                type="button"
+                onClick={() => navigate('/vendor/register')}
+                className="text-sm text-slate-600 hover:text-slate-900 font-medium"
+              >
+                Register New Restaurant
+              </button>
+            ) : location.pathname === '/admin' ? (
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="text-sm text-slate-600 hover:text-slate-900 font-medium"
+              >
+                Vendor Login
+              </button>
+            ) : (
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => navigate('/vendor')}
+                  className="text-sm text-slate-600 hover:text-slate-900 font-medium block"
+                >
+                  Vendor Portal
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/admin')}
+                  className="text-sm text-slate-600 hover:text-slate-900 font-medium block"
+                >
+                  Admin Portal
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

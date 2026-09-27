@@ -20,11 +20,13 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
+  'http://localhost:5175',
   'http://localhost:3000',
   'https://digital-menu-eight.vercel.app',
   'https://digital-menu.vercel.app',
   'https://digital-menu-front-end.vercel.app',
   'https://digital-menu-front-end-ashen.vercel.app',
+  'https://digital-menu-backend.vercel.app',
   process.env.CLIENT_URL || process.env.FRONTEND_URL || ''
 ].filter(Boolean);
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 interface ProtectedRouteProps {
@@ -9,8 +9,9 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
   const { isAuthenticated, user, isLoading } = useAuth();
+  const location = useLocation();
 
-  console.log('🔒 [ProtectedRoute] Check:', { isAuthenticated, user, allowedRoles, isLoading });
+  console.log('🔒 [ProtectedRoute] Check:', { isAuthenticated, user, allowedRoles, isLoading, path: location.pathname });
 
   if (isLoading) {
     return (
@@ -25,12 +26,17 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
 
   if (!isAuthenticated) {
     console.log('🔒 [ProtectedRoute] Not authenticated, redirecting to login');
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
     console.log('🔒 [ProtectedRoute] Role mismatch:', { userRole: user.role, allowedRoles });
-    return <Navigate to="/" replace />;
+    // Redirect to appropriate login page based on their role
+    if (user.role === 'admin') {
+      return <Navigate to="/admin" replace />;
+    } else {
+      return <Navigate to="/vendor" replace />;
+    }
   }
 
   console.log('✅ [ProtectedRoute] Access granted');

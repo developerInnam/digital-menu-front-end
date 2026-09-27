@@ -1,2 +1,9 @@
 1. When the admin registering the vendor he can able to add the vendor email and password. and what the vendor will login using that password.
-2. this the front end domain https://digital-menu-front-end-ashen.vercel.app/. 
+2. this the front end domain https://digital-menu-front-end-ashen.vercel.app/ so by default show the login page. and based on the login credentials so the authorization
+
+3. https://digital-menu-front-end-ashen.vercel.app/admin so in this page show the admin dashboard.
+4. https://digital-menu-front-end-ashen.vercel.app/vendor so in this page show the vendors login.
+5. so based on the vendor login credentials show their particular vendor dashboard
+
+
+

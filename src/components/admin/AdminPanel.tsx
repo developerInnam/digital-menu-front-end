@@ -81,6 +81,7 @@ export const AdminPanel: React.FC = () => {
       setIsSubmitting(true);
       const slug = newVendorName.toLowerCase().replace(/[^a-z0-9]/g, '-');
       
+      // Create vendor with password for login
       await api.createVendor({
         name: newVendorName.trim(),
         slug,
@@ -90,7 +91,7 @@ export const AdminPanel: React.FC = () => {
         banner: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&auto=format&fit=crop&q=80',
         ownerName: newOwnerName.trim() || 'Restaurant Owner',
         email: newEmail.trim(),
-        password: newPassword.trim(),
+        password: newPassword.trim(), // Password will be hashed by backend
         phone: newPhone.trim() || '+91 98888 77777',
         whatsapp: newPhone.trim() || '+91 98888 77777',
         instagram: '@bistro_official',
@@ -489,15 +490,16 @@ export const AdminPanel: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Password *</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Login Password *</label>
                   <input
                     type="password"
                     required
-                    placeholder="••••••••"
+                    placeholder="Vendor login password"
                     value={newPassword}
                     onChange={e => setNewPassword(e.target.value)}
                     className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none"
                   />
+                  <p className="text-[10px] text-slate-400 mt-1">Vendor will use this to login</p>
                 </div>
               </div>
 
