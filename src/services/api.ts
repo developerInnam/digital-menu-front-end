@@ -30,9 +30,8 @@ export interface DbStatusData {
   message: string;
 }
 
-// Use production backend URL when deployed, local proxy in development
-const PRODUCTION_API_URL = 'https://digital-menu-backend.vercel.app/api';
-export const API_BASE = import.meta.env.MODE === 'production' ? PRODUCTION_API_URL : '/api';
+// For development, use the Vite proxy. For production, backend needs proper deployment
+export const API_BASE = '/api';
 
 function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem('authToken');
